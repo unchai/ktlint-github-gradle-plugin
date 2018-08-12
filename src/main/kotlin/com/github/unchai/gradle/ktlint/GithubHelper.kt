@@ -58,19 +58,14 @@ internal class GithubHelper {
         val linePositionMap = ArrayList<ChangedFile>()
 
         for (fileDetail in this.pr!!.listFiles()) {
-            if (fileDetail.patch ==
-                    null) {
+            if (fileDetail.patch == null) {
                 continue
             }
 
             val diffMap = parsePatch(fileDetail.patch)
 
             if (!diffMap.isEmpty()) {
-                val changedFile = ChangedFile()
-                changedFile.path = fileDetail.filename
-                changedFile.linePositionMap = diffMap
-
-                linePositionMap.add(changedFile)
+                linePositionMap.add(ChangedFile(fileDetail.filename, diffMap))
             }
         }
 
@@ -78,7 +73,7 @@ internal class GithubHelper {
     }
 
     @Throws(IOException::class)
-    fun changeStatus(state: GHCommitState, description: String) {
+    fun changeStatus(state: GHCommitState, description: String?) {
         this.repo!!.createCommitStatus(
                 this.pr!!.head.sha,
                 state, null,

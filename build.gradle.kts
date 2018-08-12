@@ -19,12 +19,13 @@ dependencies {
     compile("com.github.shyiko:ktlint:0.27.0")
 
     testCompile("junit:junit:4.12")
+    testCompile(gradleTestKit())
 }
 
 gradlePlugin {
     plugins {
-        create("ktlint-github") {
-            id = "com.github.unchai.gradle.ktlint"
+        create("ktlintGithub") {
+            id = "ktlint-github"
             implementationClass = "com.github.unchai.gradle.ktlint.KtLintGithubPlugin"
         }
     }
