@@ -105,11 +105,9 @@ internal class GithubHelper {
         val builder = StringBuilder()
         builder.append(String.format("%s%n", PREFIX))
 
-        /*
-        for (error in comment.getCheckstyleErrors()) {
-            builder.append(String.format("[%s] %s%n", error.getSeverityLevel().name(), error.getMessage()))
+        for (error in comment.errors) {
+            builder.append(String.format("%s%n", error.error))
         }
-        */
 
         return builder.toString()
     }
