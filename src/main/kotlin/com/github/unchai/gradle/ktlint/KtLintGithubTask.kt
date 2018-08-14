@@ -41,7 +41,7 @@ open class KtLintGithubTask : DefaultTask() {
         val errors = ArrayList<KtLintError>()
 
         changedFileMap.keys
-                .map { path -> File("/Users/JaehyeonNam/Devel/workspace/private/ktlint-test", path) }
+                .map { path -> File(projectDir, path) }
                 .toList()
                 .forEach { file ->
                     KtLint.lint(file.readText(), ruleSetProviders.map { it.second.get() }) {

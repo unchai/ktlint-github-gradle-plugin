@@ -9,8 +9,8 @@ class KtLintGithubPlugin : Plugin<Project> {
 
         with(project.tasks) {
             create("ktlintGithub", KtLintGithubTask::class.java) {
-                it.group = "Development"
-                it.description = "ggggg"
+                it.group = "Lint"
+                it.description = "Leaves result of a ktlint of a project as a comment on github's pull request."
             }
         }
     }

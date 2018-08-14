@@ -19,12 +19,7 @@ class KtLintGithubPluginTest {
         File(temporaryFolder.root, "build.gradle").run {
             writeText("""
                 plugins {
-                    id "ktlint-github"
-                }
-
-                ktlintGithub {
-                    ghEndpoint "https://enterprise.github.url"
-                    ghRepository "testOwner/testRepository"
+                    id "com.github.unchai.ktlint-github"
                 }
             """.trimIndent())
         }
@@ -33,7 +28,6 @@ class KtLintGithubPluginTest {
                 .create()
                 .withProjectDir(temporaryFolder.root)
                 .withPluginClasspath()
-                .withArguments("ktlintGithub", "--githubOAuth=abc123", "--githubPullRequest=5")
                 .build()
 
         println("====================")

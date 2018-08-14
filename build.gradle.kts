@@ -1,7 +1,8 @@
 plugins {
-    kotlin("jvm") version ("1.2.60")
-    id("java-gradle-plugin")
-    id("maven-publish")
+    kotlin("jvm") version "1.2.60"
+    `java-gradle-plugin`
+    `maven-publish`
+    id("com.gradle.plugin-publish") version "0.10.0"
 }
 
 group = "com.github.unchai.gradle.ktlint"
@@ -24,9 +25,22 @@ dependencies {
 
 gradlePlugin {
     plugins {
-        create("ktlintGithub") {
-            id = "ktlint-github"
+        create("ktlintGithubPlugin") {
+            id = "com.github.unchai.ktlint-github"
             implementationClass = "com.github.unchai.gradle.ktlint.KtLintGithubPlugin"
+        }
+    }
+}
+
+pluginBundle {
+    website = "https://github.com/unchai/ktlint-github-gradle-plugin"
+    vcsUrl = "https://github.com/unchai/ktlint-github-gradle-plugin"
+    tags = listOf("default", "tags", "unless", "overridden", "in", "plugin")
+
+    (plugins) {
+        "ktlintGithubPlugin" {
+            displayName = "KtLint github pull request plugin"
+            description = "A gradle plugin that leaves the result of a ktlint of a project as a comment on github's pull request."
         }
     }
 }
