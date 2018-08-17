@@ -10,7 +10,6 @@ import org.kohsuke.github.GHCommitState
 import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 @CacheableTask
 open class KtLintGithubTask : DefaultTask() {
@@ -20,37 +19,47 @@ open class KtLintGithubTask : DefaultTask() {
     @Option(option = "githubPullRequest", description = "")
     private var ghPullRequest: String? = null
 
-    private val githubHelper: GithubHelper = GithubHelper()
-
     @TaskAction
     fun action() {
         val extension = this.project.extensions.getByName("ktlintGithub") as KtLintGithubPluginExtension
         val projectDir = this.project.projectDir.path
 
-        githubHelper.connect(extension.ghEndpoint, ghToken!!, extension.ghRepository!!, ghPullRequest!!.toInt())
+        val githubHelper = GithubHelper(extension.ghEndpoint, ghToken!!, extension.ghRepository, ghPullRequest!!.toInt())
         githubHelper.changeStatus(GHCommitState.PENDING, null)
 
         val ruleSetProviders = ServiceLoader.load(RuleSetProvider::class.java)
                 .map { it.get().id to it }
                 .sortedBy { if (it.first == "standard") "\u0000${it.first}" else it.first }
 
-        val changedFileMap = githubHelper.listChangedFile()
-                .filter { changedFile -> changedFile.path.endsWith(".kt") }
-                .associateBy({ it.path }, { it })
-
         val errors = ArrayList<KtLintError>()
 
-        changedFileMap.keys
-                .map { path -> File(projectDir, path) }
-                .toList()
-                .forEach { file ->
+        githubHelper.listChangedFile()
+                .filter { it.path.endsWith(".kt") }
+                .forEach { changedFile ->
+                    val file = File(projectDir, changedFile.path)
+                    val path = file.path.replace(projectDir, "").substring(1)
+
                     KtLint.lint(file.readText(), ruleSetProviders.map { it.second.get() }) {
-                        val path = file.path.replace(projectDir, "").substring(1)
-                        errors.add(KtLintError(path, it.line, it.detail))
+                        if (changedFile.linePositionMap.containsKey(it.line)) {
+                            errors.add(KtLintError(path, changedFile.linePositionMap[it.line]!!, mutableListOf(it.detail)))
+                        }
                     }
                 }
 
-        val comments = buildComments(changedFileMap, errors)
+        val comments = errors
+                .groupingBy { it.path + "|" + it.position }
+                .aggregate { _, accumulator: KtLintError?, element: KtLintError, _ ->
+                    when (accumulator) {
+                        null -> element
+                        else -> {
+                            accumulator.details.addAll(element.details)
+                            accumulator
+                        }
+                    }
+                }
+                .mapNotNull { it.value }
+                .map { Comment(it.path, it.position, it.details.joinToString("\n")) }
+                .toList()
 
         githubHelper.removeAllComment()
 
@@ -63,27 +72,6 @@ open class KtLintGithubTask : DefaultTask() {
         } else {
             githubHelper.changeStatus(GHCommitState.FAILURE, "reported %d errors.".format(errors.size))
         }
-    }
-
-    private fun buildComments(changedFileMap: Map<String, ChangedFile>, errors: List<KtLintError>): List<Comment> {
-        val commentMap = HashMap<String, Comment>()
-
-        for (error in errors) {
-            val key = error.path + "|" + error.line
-
-            if (commentMap.containsKey(key)) {
-                commentMap[key]!!.errors.add(error)
-            } else {
-                commentMap[error.path] =
-                        Comment(
-                                error.path,
-                                changedFileMap[error.path]!!.linePositionMap[error.line]!!,
-                                mutableListOf(error)
-                        )
-            }
-        }
-
-        return commentMap.values.toList()
     }
 
     fun setGhToken(ghToken: String) {

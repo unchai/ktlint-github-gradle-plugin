@@ -35,7 +35,7 @@ gradlePlugin {
 pluginBundle {
     website = "https://github.com/unchai/ktlint-github-gradle-plugin"
     vcsUrl = "https://github.com/unchai/ktlint-github-gradle-plugin"
-    tags = listOf("default", "tags", "unless", "overridden", "in", "plugin")
+    tags = listOf("kotlin", "ktlint", "github", "pull-requests")
 
     (plugins) {
         "ktlintGithubPlugin" {

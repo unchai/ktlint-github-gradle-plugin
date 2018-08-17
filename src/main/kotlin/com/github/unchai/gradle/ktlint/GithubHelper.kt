@@ -8,24 +8,36 @@ import java.io.IOException
 import java.util.*
 import java.util.regex.Pattern
 
-internal class GithubHelper {
+internal class GithubHelper(endpoint: String, token: String, repository: String, pullRequest: Int) {
     companion object {
         private const val CONTEXT = "coding-convention/ktlint"
         private const val PREFIX = "#### :rotating_light: ktlint defects"
     }
 
-    private var repo: GHRepository? = null
-    private var pr: GHPullRequest? = null
-    private var username: String? = null
+    private var repo: GHRepository
+    private var pr: GHPullRequest
+    private var username: String
 
-    fun parsePatch(patch: String): Map<Int, Int> {
+    init {
+        val github = GitHubBuilder()
+                .withEndpoint(endpoint)
+                .withOAuthToken(token)
+                .build()
+
+        this.username = github.myself.login
+        this.repo = github.getRepository(repository)
+        this.pr = this.repo.getPullRequest(pullRequest)
+    }
+
+    private fun parsePatch(patch: String): Map<Int, Int> {
+        val diffHeaderPattern = Pattern.compile("^@@ -(\\d+),?(\\d*) \\+(\\d+),?(\\d*) @@.*")
         var lineNo = 0
         var pathNo = 0
 
         val map = HashMap<Int, Int>()
         for (line in patch.split("\\r?\\n".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()) {
             if (line.startsWith("@@")) {
-                val matcher = Pattern.compile("^@@ -(\\d+),?(\\d*) \\+(\\d+),?(\\d*) @@.*").matcher(line)
+                val matcher = diffHeaderPattern.matcher(line)
 
                 if (matcher.matches()) {
                     lineNo = Integer.parseInt(matcher.group(3))
@@ -42,22 +54,10 @@ internal class GithubHelper {
         return map
     }
 
-    @Throws(IOException::class)
-    fun connect(endpoint: String, token: String, repository: String, pullRequest: Int) {
-        val github = GitHubBuilder()
-                .withEndpoint(endpoint)
-                .withOAuthToken(token)
-                .build()
-
-        this.username = github.myself.login
-        this.repo = github.getRepository(repository)
-        this.pr = this.repo!!.getPullRequest(pullRequest)
-    }
-
     fun listChangedFile(): List<ChangedFile> {
         val linePositionMap = ArrayList<ChangedFile>()
 
-        for (fileDetail in this.pr!!.listFiles()) {
+        for (fileDetail in this.pr.listFiles()) {
             if (fileDetail.patch == null) {
                 continue
             }
@@ -74,8 +74,8 @@ internal class GithubHelper {
 
     @Throws(IOException::class)
     fun changeStatus(state: GHCommitState, description: String?) {
-        this.repo!!.createCommitStatus(
-                this.pr!!.head.sha,
+        this.repo.createCommitStatus(
+                this.pr.head.sha,
                 state, null,
                 description,
                 CONTEXT
@@ -84,7 +84,7 @@ internal class GithubHelper {
 
     @Throws(IOException::class)
     fun removeAllComment() {
-        for (comment in this.pr!!.listReviewComments()) {
+        for (comment in this.pr.listReviewComments()) {
             if (comment.user.login == this.username && comment.body.startsWith(PREFIX)) {
                 comment.delete()
             }
@@ -93,9 +93,9 @@ internal class GithubHelper {
 
     @Throws(IOException::class)
     fun createComment(comment: Comment) {
-        this.pr!!.createReviewComment(
+        this.pr.createReviewComment(
                 buildCommentBody(comment),
-                this.pr!!.head.sha,
+                this.pr.head.sha,
                 comment.path,
                 comment.position
         )
@@ -103,11 +103,8 @@ internal class GithubHelper {
 
     private fun buildCommentBody(comment: Comment): String {
         val builder = StringBuilder()
-        builder.append(String.format("%s%n", PREFIX))
-
-        for (error in comment.errors) {
-            builder.append(String.format("%s%n", error.error))
-        }
+        builder.append("%s%n".format(PREFIX))
+        builder.append(comment.body)
 
         return builder.toString()
     }
