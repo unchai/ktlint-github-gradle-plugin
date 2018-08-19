@@ -1,0 +1,5 @@
+language: java
+jdk: openjdk8
+sudo: false
+install: skip
+script: ./gradlew clean test
