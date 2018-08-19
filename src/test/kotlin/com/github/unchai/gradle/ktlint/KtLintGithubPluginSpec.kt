@@ -23,8 +23,44 @@
  */
 package com.github.unchai.gradle.ktlint
 
-class KtLintError(val path: String, val position: Int, val details: MutableList<String>)
+import org.gradle.testkit.runner.GradleRunner
+import org.jetbrains.spek.api.Spek
+import org.jetbrains.spek.api.dsl.describe
+import org.jetbrains.spek.api.dsl.it
+import org.jetbrains.spek.api.dsl.on
+import java.io.File
+import kotlin.test.assertTrue
 
-class ChangedFile(val path: String, val linePositionMap: Map<Int, Int>)
+object KtLintGithubPluginSpec : Spek({
+    var tmpdir: File? = null
 
-class Comment(val path: String, val position: Int, val body: String)
+    beforeGroup {
+        tmpdir = createTempDir("junit5", null, null)
+    }
+
+    afterGroup {
+        tmpdir!!.delete()
+    }
+
+    describe("Gradle plugin test") {
+        on("initialize gradle with plugin") {
+            File(tmpdir, "build.gradle").run {
+                writeText("""
+                plugins {
+                    id "com.github.unchai.ktlint-github"
+                }
+            """.trimIndent())
+            }
+
+            val buildResult = GradleRunner
+                    .create()
+                    .withProjectDir(tmpdir)
+                    .withPluginClasspath()
+                    .build()
+
+            it("gradle exit without error") {
+                assertTrue { buildResult.output.contains("BUILD SUCCESSFUL") }
+            }
+        }
+    }
+})
