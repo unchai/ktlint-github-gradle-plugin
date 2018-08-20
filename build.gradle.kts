@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 
 plugins {
-    kotlin("jvm") version "1.2.60"
+    kotlin("jvm") version "1.2.51"
     `java-gradle-plugin`
     `maven-publish`
     id("com.gradle.plugin-publish") version "0.10.0"
@@ -15,12 +15,12 @@ repositories {
     jcenter()
 }
 
-val kotlinVersion = "1.2.60"
+val kotlinVersion = "1.2.51"
 val junitPlatformVersion = "1.2.0"
 val spekVersion = "1.2.0"
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8"))
+    implementation(kotlin("stdlib-jdk8", kotlinVersion))
 
     compile("org.kohsuke:github-api:1.93")
     compile("com.github.shyiko:ktlint:0.27.0")
