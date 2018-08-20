@@ -75,7 +75,7 @@ class GithubHelper(endpoint: String, token: String, repository: String, pullRequ
     }
 
     fun listChangedFile(): List<ChangedFile> {
-        val linePositionMap = ArrayList<ChangedFile>()
+        val linePositionMap = mutableListOf<ChangedFile>()
 
         for (fileDetail in this.pr.listFiles()) {
             if (fileDetail.patch == null) {
