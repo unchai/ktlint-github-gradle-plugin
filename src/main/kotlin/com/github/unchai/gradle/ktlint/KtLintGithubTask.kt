@@ -31,10 +31,10 @@ import org.gradle.api.tasks.options.Option
 @CacheableTask
 open class KtLintGithubTask : DefaultTask() {
     @Option(option = "githubOAuth", description = "Github oauth token")
-    private lateinit var ghToken: String
+    private lateinit var githubOAuth: String
 
     @Option(option = "githubPullRequest", description = "Github pull request id")
-    private lateinit var ghPullRequest: String
+    private lateinit var githubPullRequest: String
 
     @TaskAction
     fun action() {
@@ -42,16 +42,16 @@ open class KtLintGithubTask : DefaultTask() {
         val projectDir = this.project.projectDir.path
 
         KtLintGithubExecutor(
-                GithubHelper(extension.ghEndpoint, ghToken, extension.ghRepository, ghPullRequest.toInt()),
+                GithubHelper(extension.ghEndpoint, githubOAuth, extension.ghRepository, githubPullRequest.toInt()),
                 projectDir
         ).exec()
     }
 
-    fun setGhToken(ghToken: String) {
-        this.ghToken = ghToken
+    fun setGithubOAuth(githubOAuth: String) {
+        this.githubOAuth = githubOAuth
     }
 
-    fun setGhPullRequest(ghPullRequest: String) {
-        this.ghPullRequest = ghPullRequest
+    fun setGithubPullRequest(githubPullRequest: String) {
+        this.githubPullRequest = githubPullRequest
     }
 }
