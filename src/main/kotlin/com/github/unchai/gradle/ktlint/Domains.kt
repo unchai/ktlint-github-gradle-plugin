@@ -23,8 +23,8 @@
  */
 package com.github.unchai.gradle.ktlint
 
-class KtLintError(val path: String, val position: Int, val details: MutableList<String>)
+data class KtLintError(val path: String, val position: Int, val details: MutableList<String>)
 
-class ChangedFile(val path: String, val linePositionMap: Map<Int, Int>)
+data class ChangedFile(val path: String, val linePositionMap: Map<Int, Int>)
 
-class Comment(val path: String, val position: Int, val body: String)
+data class Comment(val path: String, val position: Int, val body: String)

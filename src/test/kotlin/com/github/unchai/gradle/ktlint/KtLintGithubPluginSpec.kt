@@ -58,7 +58,7 @@ object KtLintGithubPluginSpec : Spek({
                     .withPluginClasspath()
                     .build()
 
-            it("gradle exit without error") {
+            it("gradle should exit without error") {
                 assertTrue { buildResult.output.contains("BUILD SUCCESSFUL") }
             }
         }

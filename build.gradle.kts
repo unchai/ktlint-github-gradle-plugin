@@ -13,6 +13,9 @@ version = "0.0.1-SNAPSHOT"
 repositories {
     mavenCentral()
     jcenter()
+    maven {
+        url = uri("http://dl.bintray.com/jetbrains/spek")
+    }
 }
 
 val kotlinVersion = "1.2.51"
@@ -31,12 +34,10 @@ dependencies {
     testImplementation("org.jetbrains.spek:spek-api:$spekVersion") {
         exclude(group = "org.jetbrains.kotlin")
     }
-
     testRuntimeOnly("org.jetbrains.spek:spek-junit-platform-engine:$spekVersion") {
         exclude(group = "org.jetbrains.kotlin")
         exclude(group = "org.junit.platform")
     }
-
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:$junitPlatformVersion") {
         because("Needed to run tests IDEs that bundle an older version")
     }

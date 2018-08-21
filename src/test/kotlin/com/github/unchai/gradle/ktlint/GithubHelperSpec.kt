@@ -66,8 +66,8 @@ object GithubHelperSpec : Spek({
         )
     }
 
-    describe("parse diff") {
-        on("modify") {
+    describe("Github diff parser test") {
+        on("when modify case") {
             val diff = """
                 @@ -24,14 +24,16 @@ function ManifestReplacePlugin(options) {
                  ManifestReplacePlugin.prototype.apply = function (compiler) {
@@ -98,7 +98,7 @@ object GithubHelperSpec : Spek({
             }
         }
 
-        on("add") {
+        on("when add case") {
             val diff = """
                 @@ -0,0 +1,3 @@
                 +/node_modules
@@ -116,7 +116,7 @@ object GithubHelperSpec : Spek({
             }
         }
 
-        on("delete") {
+        on("when delete case") {
             val diff = """
                 @@ -1,6 +0,0 @@
                 -{
