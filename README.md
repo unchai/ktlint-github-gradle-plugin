@@ -19,6 +19,7 @@ plugins {
 }
 
 ktlintGithub {
+  ghEndpoint = "https://api.github.com"
   ghRepository = "owner/repo"
 }
 ```
